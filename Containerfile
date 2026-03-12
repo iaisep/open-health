@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 RUN npm run build && \
-    adduser --disabled-password ohuser && \
+    adduser -D ohuser && \
     chown -R ohuser .
 
 USER ohuser
