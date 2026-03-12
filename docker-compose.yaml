@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "59432:5432"
 
   docling-serve:
     image: ghcr.io/ds4sd/docling-serve:latest
