@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  open-health:
+    image: openhealthforall/open-health:latest
+    container_name: open-health
+    restart: always
+    environment:
+      # URL pública de tu instancia (ej: https://salud.tu-dominio.com)
+      - NEXTAUTH_URL=${SERVICE_FQDN_APP}
+      # Genera una cadena aleatoria larga para esta clave
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      # Configuración de base de datos interna
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+      # Configuración de IA (Ollama o OpenAI)
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15-alpine
+    container_name: open-health-db
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-openhealth}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password123}
+      - POSTGRES_DB=${POSTGRES_DB:-openhealthdb}
+    volumes:
+      - open-health-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openhealth} -d ${POSTGRES_DB:-openhealthdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  open-health-db-data:
