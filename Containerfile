@@ -5,16 +5,22 @@ RUN apk add -U graphicsmagick
 
 WORKDIR /app
 
-COPY package.json prisma/ .
+# Copy package files and prisma schema
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 
-RUN npm install
+# Install dependencies (including dev dependencies needed for build)
+RUN npm ci
 
+# Copy application code
 COPY . .
 
+# Build the application and create user
 RUN npm run build && \
     adduser -D ohuser && \
     chown -R ohuser .
 
 USER ohuser
 EXPOSE 3000
+
 ENTRYPOINT ["sh", "-c", "npx prisma db push --accept-data-loss && npx prisma db seed && npm start"]
